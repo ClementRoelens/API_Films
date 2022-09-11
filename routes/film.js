@@ -1,29 +1,36 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const filmCtrl = require('../controllers/film');
-const multer = require('../middlewares/multer-config');
+const filmCtrl = require("../controllers/film");
+// const validator = require("../middlewares/validateFilm");
+const multer = require("../middlewares/multer-config");
+const auth = require("../middlewares/authentification");
 
 // Les get
 // Renvoie la totalité
-router.get('/', filmCtrl.tousLesFilms);
-router.get('/par_genre/:genre', filmCtrl.tousLesFilmsParGenre);
-router.get('/par_real/:real', filmCtrl.tousLesFilmsParReal);
+router.get("/getAllFilms", filmCtrl.getAllFilms);
+router.get("/getAllInOneGenre/:genre", filmCtrl.getAllInOneGenre);
+router.get("/getAllInOneDirector/:director", filmCtrl.getAllInOneDirector);
 // Renvoie un certain nombre au hasard
-router.get('/au_hasard', filmCtrl.filmsAuHasard);
-router.get('/au_hasard_par_genre/:genre',filmCtrl.filmsAuHasardParGenre);
-router.get('/au_hasard_par_real/:real',filmCtrl.filmsAuHasardParReal);
-router.get('/un_seul_au_hasard', filmCtrl.unFilmAuHasard);
+router.get("/getRandomFilms", filmCtrl.getRandomFilms);
+router.get("/getRandomInOneGenre/:genre",filmCtrl.getRandomInOneGenre);
+router.get("/getRandomInOneDirector/:director",filmCtrl.getRandomInOneDirector);
+router.get("/getOneRandom", filmCtrl.getOneRandom);
 // Renvoie un seul film choisi
-router.get('/par_id/:id', filmCtrl.unFilm);
+router.get("/getOneFilm/:id", filmCtrl.getOneFilm);
 
 // Les autres
-router.post('/', multer, filmCtrl.ajouterFilm);
-router.post('/like/:id', filmCtrl.like);
-router.post('/dislike/:id', filmCtrl.dislike);
-router.post('/avis/:id', filmCtrl.ajouterAvis);
+// Il serait bien plus logique de d'abord valider, et d'ensuite si la requête est bonne d'ajouter l'image... Mais je n'ai pas encore trouvé comment
+router.post("/addOneFilm", multer, filmCtrl.addOneFilm);
+// router.post("/like/:id", auth, filmCtrl.like);
+// router.post("/dislike/:id", auth , filmCtrl.dislike);
+// router.post("/addOpinion/:filmId/:noticeId", auth, filmCtrl.ajouterAvis);
 
-router.put('/:id', multer, filmCtrl.modifierFilm);
+router.put("/fix",filmCtrl.fix);
 
-// router.delete('/:id',filmCtrl.supprimer);
+
+// router.delete("/:id",filmCtrl.supprimer);
+
+
+
 
 module.exports = router;

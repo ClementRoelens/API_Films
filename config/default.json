@@ -1,0 +1,17 @@
+{
+    "Genres": [
+        "Action",
+        "Aventure",
+        "Comédie",
+        "Drame",
+        "Fantasy",
+        "Guerre",
+        "Historique",
+        "Horreur",
+        "Romance",
+        "Science-fiction",
+        "Thriller",
+        "Western"
+    ],
+    "BaseUrl": "http://localhost:3000/"
+}
