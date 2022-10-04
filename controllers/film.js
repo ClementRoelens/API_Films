@@ -1,7 +1,7 @@
 const Film = require("../models/film");
 // const fs = require("fs");
-// const config = require("config");
-// const genres = config.get("Genres");
+const config = require("config");
+// const genres = config.get("genres");
 
 // Fonction prenant un tableau de films pour en retourner 20 au hasard
 const getNfilms = (films) => {
@@ -163,6 +163,10 @@ exports.getOneRandom = (req, res, next) => {
 //         .catch()
 
 // };
+
+exports.getGenres = (req,res,next) => {
+    res.status(200).json(config.get('genres'))
+}
 
 //#endregion
 

@@ -1,5 +1,5 @@
 {
-    "Genres": [
+    "genres": [
         "Action",
         "Aventure",
         "Comédie",
@@ -12,6 +12,5 @@
         "Science-fiction",
         "Thriller",
         "Western"
-    ],
-    "BaseUrl": "http://localhost:3000/"
+    ]
 }

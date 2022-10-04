@@ -17,6 +17,7 @@ router.get("/getRandomInOneDirector/:director",filmCtrl.getRandomInOneDirector);
 router.get("/getOneRandom", filmCtrl.getOneRandom);
 // Renvoie un seul film choisi
 router.get("/getOneFilm/:id", filmCtrl.getOneFilm);
+router.get("/getGenres",filmCtrl.getGenres);
 
 // Les autres
 // Il serait bien plus logique de d'abord valider, et d'ensuite si la requête est bonne d'ajouter l'image... Mais je n'ai pas encore trouvé comment
