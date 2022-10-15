@@ -1,14 +1,14 @@
 const User = require("../models/user");
 const Opinion = require("../models/opinion");
 const Film = require("../models/film");
-const { json } = require("express/lib/response");
+// const { json } = require("express/lib/response");
 
 exports.addOneOpinion = (req, res, next) => {
     console.log("Entrée dans sharedController.createOpinion");
-    console.log("userId : "+req.body.userId);
-    console.log("filmId : "+req.body.filmId);
-    console.log("content : "+req.body.content);
-   
+    console.log("userId : " + req.body.userId);
+    console.log("filmId : " + req.body.filmId);
+    console.log("content : " + req.body.content);
+
     const newOpinion = new Opinion({
         content: req.body.content,
         likes: 0,
@@ -17,12 +17,12 @@ exports.addOneOpinion = (req, res, next) => {
     newOpinion.save()
         .then(opinion => {
             console.log("Avis créé. On va mainenant ajouter la référence dans le film et l'user impliqués");
-            console.log("filmId : "+req.body.filmId);
+            console.log("filmId : " + req.body.filmId);
             Film.findOne({ _id: req.body.filmId })
                 .then(film => {
-                    console.log("Film trouvé : "+film);
+                    console.log("Film trouvé : " + film);
                     let newOpinionsId = film.opinionsId;
-                    console.log("newOpinionsId : "+newOpinionsId);
+                    console.log("newOpinionsId : " + newOpinionsId);
                     newOpinionsId.push(opinion._id);
                     Film.findOneAndUpdate(
                         { _id: film._id },
@@ -329,58 +329,64 @@ exports.likeOpinion = (req, res, next) => {
 //         })
 // };
 
-exports.likeOrDislikeFilm = (req, res, next) => {
+exports.likeOrDislikeItem = (req, res, next) => {
     // La variable "action" détermine si l'user veut liker ou disliker le film
     const action = (req.body.action === "like") ? "like" : "dislike";
-    console.log(`Lancement du ${action} d'un film`);
+    const itemType = req.body.itemType;
+    console.log(`Lancement du ${action} d'un ${itemType}`);
     // On va devoir modifier l'utilisateur (pour sa liste de films likés/dislikés) et le film (pour son nombre de likes/dislikes)
     console.log("Lancement de la requête pour récupérer l'utilisateur");
     User.findOne({ _id: req.body.userId })
         .then(user => {
             console.log("Utilisateur récupéré : " + user.nickname);
-            let newLikedFilmsId = user.likedFilmsId;
-            let newDislikedFilmsId = user.dislikedFilmsId;
+            let newLists = {};
+            if (itemType === "film") {
+                newLists = {
+                    likes: user.likedFilmsId,
+                    dislikes: user.dislikedFilmsId
+                };
+            }
             let likesOperation = 0;
             let dislikesOperation = 0;
 
             if (action === "like") {
                 // Si l'id du film est présent dans la liste de l'utilisateur, on le supprime et on désincrémente le nombre de likes
-                if (newLikedFilmsId.includes(req.body.filmId)) {
+                if (newLists.likes.includes(req.body.itemId)) {
                     console.log("Like à enlever");
-                    const index = newLikedFilmsId.indexOf(req.body.filmId);
-                    newLikedFilmsId.splice(index, 1);
+                    const index = newLists.likes.indexOf(req.body.itemId);
+                    newLists.likes.splice(index, 1);
                     likesOperation = -1;
                 }
                 // S'il est absent, on va incrémenter le nombre de likes 
                 // Mais on va également devoir vérifier que le film n'a pas été disliké : un utilisateur ne peut pas avoir deux avis contraires sur un film
                 else {
                     console.log("Like à ajouter");
-                    newLikedFilmsId.push(req.body.filmId);
+                    newLists.likes.push(req.body.itemId);
                     likesOperation = 1;
-                    if (newDislikedFilmsId.includes(req.body.filmId)) {
+                    if (newLists.dislikes.includes(req.body.itemId)) {
                         console.log("Puisque le film était disliké et va être liké, on enlève le dislike");
-                        const index2 = newDislikedFilmsId.indexOf(req.body.filmId);
-                        newDislikedFilmsId.splice(index2, 1);
+                        const index2 = newLists.dislikes.indexOf(req.body.itemId);
+                        newLists.dislikes.splice(index2, 1);
                         dislikesOperation = -1;
                     }
                 }
             }
             // Et si l'opération est un dislike, on utilise la même logique mais pour les dislikes
             else {
-                if (newDislikedFilmsId.includes(req.body.filmId)) {
+                if (newLists.dislikes.includes(req.body.itemId)) {
                     console.log("Dislike à enlever");
-                    const index = newDislikedFilmsId.indexOf(req.body.filmId);
-                    newDislikedFilmsId.splice(index, 1);
+                    const index = newLists.dislikes.indexOf(req.body.itemId);
+                    newLists.dislikes.splice(index, 1);
                     dislikesOperation = -1;
                 }
                 else {
                     console.log("Dislike à ajouter");
-                    newDislikedFilmsId.push(req.body.filmId);
+                    newLists.dislikes.push(req.body.itemId);
                     dislikesOperation = 1;
-                    if (newLikedFilmsId.includes(req.body.filmId)) {
+                    if (newLists.likes.includes(req.body.itemId)) {
                         console.log("Puisque le film était liké et va être disliké, on enlève le like");
-                        const index2 = newLikedFilmsId.indexOf(req.body.filmId);
-                        newLikedFilmsId.splice(index2, 1);
+                        const index2 = newLists.likes.indexOf(req.body.itemId);
+                        newLists.likes.splice(index2, 1);
                         likesOperation = -1;
                     }
                 }
@@ -389,36 +395,43 @@ exports.likeOrDislikeFilm = (req, res, next) => {
             console.log("likeoperation : " + likesOperation);
             console.log("dislikeoperation : " + dislikesOperation);
             console.log("Lancement de l'update de l'user");
+            let change = {};
+            if (itemType === "film") {
+                change = {
+                    likedFilmsId: newLists.likes,
+                    dislikedFilmsId: newLists.dislikes
+                };
+            }
             User.findOneAndUpdate(
                 { _id: req.body.userId },
-                {
-                    likedFilmsId: newLikedFilmsId,
-                    dislikedFilmsId: newDislikedFilmsId
-                },
+                change,
                 { new: true })
                 .then(updatedUser => {
                     console.log("User mis à jour!");
                     console.log("Lancement de la maj du film");
-                    Film.findOneAndUpdate(
-                        { _id: req.body.filmId },
-                        {
-                            $inc: {
-                                likes: likesOperation,
-                                dislikes: dislikesOperation
-                            }
-                        },
-                        { new: true })
-                        .then(updatedFilm => {
-                            console.log("L'utilisateur " + updatedUser.nickname + " a bien ajouté ou enlevé un like au film " + updatedFilm.title + ".\nIl a été liké " + updatedFilm.likes + "fois");
-                            res.status(201).json({
-                                user: updatedUser,
-                                film: updatedFilm
+                    if (itemType === 'film') {
+                        Film.findOneAndUpdate(
+                            { _id: req.body.itemId },
+                            {
+                                $inc: {
+                                    likes: likesOperation,
+                                    dislikes: dislikesOperation
+                                }
+                            },
+                            { new: true })
+                            .then(updatedFilm => {
+                                console.log("L'utilisateur " + updatedUser.nickname + " a bien ajouté ou enlevé un like au film " + updatedFilm.title + ".\nIl a été liké " + updatedFilm.likes + "fois");
+                                res.status(201).json({
+                                    user: updatedUser,
+                                    film: updatedFilm
+                                });
+                            })
+                            .catch(error => {
+                                console.log("Erreur dans la modification des likes au film d'id " + req.body.itemId + "\n" + error);
+                                res.status(400).json(error);
                             });
-                        })
-                        .catch(error => {
-                            console.log("Erreur dans la modification des likes au film d'id " + req.body.filmId + "\n" + error);
-                            res.status(400).json(error);
-                        });
+                    }
+
                 })
                 .catch(error => {
                     console.log("Erreur dans la modification de l'utilisateur pour ajouter le film liké à sa liste\n" + error);
@@ -430,3 +443,78 @@ exports.likeOrDislikeFilm = (req, res, next) => {
             res.status(400).json(error);
         })
 }
+
+// exports.fix = (req, res, next) => {
+//     Film.find().then(films => {
+//         let i = 0;
+//         let tempFilms = [];
+//         films.forEach(film => {
+//             const tempFilm = new TempFilm({
+//                 title: film.title,
+//                 author: film.director,
+//                 description: film.description,
+//                 date: film.date,
+//                 genres: film.genres,
+//                 imageUrl: film.imageUrl,
+//                 likes: film.likes,
+//                 dislikes: film.dislikes,
+//                 opinionsId: film.opinionsId
+//             });
+//             tempFilm.save().then(savedFilm => {
+//                 tempFilms.push(savedFilm);
+//                 i++;
+//                 if (i == films.length) {
+//                     User.find().then(users => {
+//                         users.forEach(user => {
+//                             let userUpdate = false;
+//                             let newLikedList = user.likedFilmsId;
+//                             let newDislikedList = user.dislikedFilmsId;
+//                             if (user.likedFilmsId.includes(film._id)) {
+//                                 userUpdate = true;
+//                                 const index = user.likedFilmsId.indexOf(film._id);
+//                                 newLikedList.splice(index, 1);
+//                                 newLikedList.push()
+//                             }
+//                             else if (user.dislikedFilmsId.includes(film._id)) {
+//                                 userUpdate = true;
+//                                 const index = user.dislikedFilmsId.indexOf(film._id);
+//                                 newDislikedList.splice(index, 1);
+//                             }
+//                             if (userUpdate) {
+//                                 User.findOneAndUpdate(
+//                                     { _id: user._id },
+//                                     {
+//                                         likedFilmsId: newLikedList,
+//                                         dislikedFilmsId: newDislikedList
+//                                     },
+//                                     { new: true }
+//                                 ).then()
+//                                     .catch(error => {
+//                                         const message = "Erreur lors de l'update de l'user";
+//                                         res.status(400).json({
+//                                             erreur: error,
+//                                             msg: message
+//                                         });
+//                                     });
+//                             }
+//                         });
+//                     })
+//                         .catch(error => {
+//                             const message = "Erreur lors de la récupération des users";
+//                             console.log('message');
+//                             res.status(400).json({ erreur: error, msg: message });
+//                         });
+//                 }
+//             }).catch(error => {
+//                 const message = "Erreur lors de la sauvegarde du film temporaire";
+//                 console.log('message');
+//                 res.status(400).json({ erreur: error, msg: message });
+//             });
+//         });
+//     })
+//         .catch(error => {
+//             const message = "Erreur lors de la récupération des films";
+//             console.log('message');
+//             res.status(400).json({ erreur: error, msg: message });
+//         });
+// }

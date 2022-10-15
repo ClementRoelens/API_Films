@@ -257,6 +257,7 @@ exports.dislike = (req, res, next) => {
 // Uniquement pour le développement
 
 exports.fix = (req, res, next) => {
-  
+ Film.updateMany({},{$rename : {'director':'author'}})
+ .then(films=>res.status(200).json(films))
 };
 

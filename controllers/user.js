@@ -15,7 +15,7 @@ exports.signup = (req, res, next) => {
             });
             user.save()
                 .then(() => {
-                    res.status(201).json({message : 'Utilisateur créé!'})
+                    res.status(201).json({ message: 'Utilisateur créé!' })
                 })
                 .catch(error => res.status(400).json(error));
         })
@@ -33,7 +33,7 @@ exports.signin = (req, res, next) => {
                     .then(result => {
                         if (result) {
                             // Si le résultat est positif, alors on renvoie les infos de l'utilisateur
-                            console.log("Connexion réussie de "+user.nickname);
+                            console.log("Connexion réussie de " + user.nickname);
                             res.status(200).json({
                                 _id: user.id,
                                 nickname: user.nickname,
@@ -72,7 +72,16 @@ exports.signin = (req, res, next) => {
 exports.getOneUser = (req, res, next) => {
     User.findOne({ _id: req.params.id })
         .then(user => {
-            res.status(200).json(user);
+            const sendUser = {
+                _id: user._id,
+                nickname: user.nickname,
+                likedFilmsId: user.likedFilmsId,
+                dislikedFilmsId: user.dislikedFilmsId,
+                opinionsId: user.opinionsId,
+                likedOpinionsId: user.likedOpinionsId,
+                isAdmin: user.isAdmin
+            };
+            res.status(200).json(sendUser);
         })
         .catch(error => {
             console.log(error);
@@ -145,11 +154,11 @@ exports.getOpinions = (req, res, next) => {
         })
 };
 
-exports.fix = (req,res,next) => {
-  
+exports.fix = (req, res, next) => {
+
 }
 
-exports.getAllUsers = (req,res,next) => {
-    User.find().then(users=>res.status(200).json(users))
+exports.getAllUsers = (req, res, next) => {
+    User.find().then(users => res.status(200).json(users))
 }
 
