@@ -37,7 +37,7 @@ exports.editOpinion = (req, res, next) => {
 //         const length = users.length;
 //         let i = 0;
 //         users.forEach(user=>{
-//             console.log("user "+user.nickname);
+//             console.log("user "+user.username);
 //             let newList = [];
 //             User.findOneAndUpdate(
 //                 {_id:user._id},
@@ -65,7 +65,7 @@ exports.editOpinion = (req, res, next) => {
 //         let iFinal = 0;
 //         const lengthFinal = users.length;
 //         users.forEach(user => {
-//             console.log("User numéro " + iFinal + ", " + user.nickname + ", en cours");
+//             console.log("User numéro " + iFinal + ", " + user.username + ", en cours");
 //             console.log("likedOpinionsId : " + user.likedOpinionsId);
 //             const length = user.likedOpinionsId.length;
 //             let i = 0;

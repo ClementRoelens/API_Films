@@ -62,16 +62,16 @@ exports.getAllInOneGenre = (req, res, next) => {
         });
 };
 
-exports.getAllInOneDirector = (req, res, next) => {
-    const seekedDirector = req.params.director;
-    Film.find({ director: seekedDirector })
+exports.getAllInOneAuthor = (req, res, next) => {
+    const seekedAuthor = req.params.author;
+    Film.find({ author: seekedAuthor })
         .then(films => {
             const filmsToSend = films.map(formatDate);
-            console.log(reqDate() + "Succès de la récupération de tous les films réalisés par " + seekedDirector + "Nombre de films récupérés : " + filmsToSend.length);
+            console.log(reqDate() + "Succès de la récupération de tous les films réalisés par " + seekedAuthor + "Nombre de films récupérés : " + filmsToSend.length);
             res.status(200).json(filmsToSend);
         })
         .catch(error => {
-            console.log(reqDate() + "Erreur dans la récupération de tous les films réalisés par " + seekedDirector + "\n" + error);
+            console.log(reqDate() + "Erreur dans la récupération de tous les films réalisés par " + seekedAuthor + "\n" + error);
             res.status(404).json(error);
         })
 };
@@ -113,17 +113,17 @@ exports.getRandomInOneGenre = (req, res, next) => {
 
 };
 
-exports.getRandomInOneDirector = (req, res, next) => {
-    const seekedDirector = req.params.director;
-    Film.find({ director: seekedDirector })
+exports.getRandomInOneAuthor = (req, res, next) => {
+    const seekedAuthor = req.params.author;
+    Film.find({ author: seekedAuthor })
         .then(films => {
             const filmsToSend = films.map(formatDate);
             const sentFilms = getNfilms(filmsToSend);
-            console.log(reqDate() + "Succès de la récupération de 20 films réalisés par " + seekedDirector + " au hasard");
+            console.log(reqDate() + "Succès de la récupération de 20 films réalisés par " + seekedAuthor + " au hasard");
             res.status(200).json(sentFilms);
         })
         .catch((error) => {
-            console.log(reqDate() + "Erreur dans la récupération de films de " + seekedDirector + " au hasard\n" + error);
+            console.log(reqDate() + "Erreur dans la récupération de films de " + seekedAuthor + " au hasard\n" + error);
             res.status(404).json(error);
         });
 };
@@ -199,7 +199,7 @@ exports.addOneFilm = (req, res, next) => {
     console.log('Film controller : genres :' + genresArray);
     const sentFilm = new Film({
         title: tempFilm.title,
-        director: tempFilm.director,
+        author: tempFilm.author,
         description: tempFilm.description,
         date: tempFilm.date,
         genres: genresArray,
@@ -257,7 +257,7 @@ exports.dislike = (req, res, next) => {
 // Uniquement pour le développement
 
 exports.fix = (req, res, next) => {
- Film.updateMany({},{$rename : {'director':'author'}})
+ Film.updateMany({},{$rename : {'author':'author'}})
  .then(films=>res.status(200).json(films))
 };
 

@@ -6,7 +6,7 @@ const Film = require("../models/film");
 exports.addOneOpinion = (req, res, next) => {
     console.log("Entrée dans sharedController.createOpinion");
     console.log("userId : " + req.body.userId);
-    console.log("filmId : " + req.body.filmId);
+    console.log("itemId : " + req.body.itemId);
     console.log("content : " + req.body.content);
 
     const newOpinion = new Opinion({
@@ -17,53 +17,57 @@ exports.addOneOpinion = (req, res, next) => {
     newOpinion.save()
         .then(opinion => {
             console.log("Avis créé. On va mainenant ajouter la référence dans le film et l'user impliqués");
-            console.log("filmId : " + req.body.filmId);
-            Film.findOne({ _id: req.body.filmId })
-                .then(film => {
-                    console.log("Film trouvé : " + film);
-                    let newOpinionsId = film.opinionsId;
-                    console.log("newOpinionsId : " + newOpinionsId);
+            console.log("itemId : " + req.body.itemId);
+
+            User.findOne({ _id: req.body.userId })
+                .then(user => {
+                    console.log("Utilisateur trouvé");
+                    let newOpinionsId = user.opinionsId;
                     newOpinionsId.push(opinion._id);
-                    Film.findOneAndUpdate(
-                        { _id: film._id },
+                    User.findOneAndUpdate(
+                        { _id: user._id },
                         { opinionsId: newOpinionsId },
                         { new: true })
-                        .then(updatedFilm => {
-                            console.log("Film mis à jour. On va maintenant mettre à jour l'user");
-                            User.findOne({ _id: req.body.userId })
-                                .then(user => {
-                                    console.log("Utilisateur trouvé");
-                                    let newOpinionsId = user.opinionsId;
-                                    newOpinionsId.push(opinion._id);
-                                    User.findOneAndUpdate(
-                                        { _id: user._id },
-                                        { opinionsId: newOpinionsId },
-                                        { new: true })
-                                        .then(updatedUser => {
-                                            console.log("User mise à jour");
-                                            res.status(201).json({
-                                                opinion: opinion,
-                                                film: updatedFilm,
-                                                user: updatedUser
+                        .then(updatedUser => {
+                            console.log("User mise à jour");
+
+                            if (req.body.itemType === "film") {
+                                Film.findOne({ _id: req.body.itemId })
+                                    .then(film => {
+                                        console.log("Film trouvé : " + film);
+                                        let newOpinionsId = film.opinionsId;
+                                        console.log("newOpinionsId : " + newOpinionsId);
+                                        newOpinionsId.push(opinion._id);
+                                        Film.findOneAndUpdate(
+                                            { _id: film._id },
+                                            { opinionsId: newOpinionsId },
+                                            { new: true })
+                                            .then(updatedFilm => {
+                                                console.log("Film mis à jour. On va maintenant mettre à jour l'user");
+                                                res.status(201).json({
+                                                    opinion: opinion,
+                                                    film: updatedFilm,
+                                                    user: updatedUser
+                                                });
+                                            })
+                                            .catch(error => {
+                                                console.log("Erreur lors de la modification du film : " + error);
+                                                res.status(400).json({ Erreur: error });
                                             });
-                                        })
-                                        .catch(error => {
-                                            console.log("Erreur lors de la mise à jour de l'user");
-                                            res.status(400).json({ Erreur: error });
-                                        });
-                                })
-                                .catch(error => {
-                                    console.log("Erreur lors de la récupération de l'user : " + error);
-                                    res.status(404).json({ Erreur: error });
-                                });
+                                    })
+                                    .catch(error => {
+                                        console.log("Erreur lors de la récupération du film : " + error);
+                                        res.status(404).json({ Erreur: error });
+                                    });
+                            }
                         })
                         .catch(error => {
-                            console.log("Erreur lors de la modification du film : " + error);
+                            console.log("Erreur lors de la mise à jour de l'user");
                             res.status(400).json({ Erreur: error });
                         });
                 })
                 .catch(error => {
-                    console.log("Erreur lors de la récupération du film : " + error);
+                    console.log("Erreur lors de la récupération de l'user : " + error);
                     res.status(404).json({ Erreur: error });
                 });
         })
@@ -199,6 +203,7 @@ exports.likeOpinion = (req, res, next) => {
             res.status(404).json(error);
         });
 };
+
 //     console.log("Lancement du like d'un film");
 //     const action = "like" ? "like" : "dislike";
 //     // Cette fonction est appelée quand l'utilisateur clique sur le pouce en l'air
@@ -206,7 +211,7 @@ exports.likeOpinion = (req, res, next) => {
 //     console.log("Lancement de la requête pour récupérer l'utilisateur");
 //     User.findOne({ _id: req.body.userId })
 //         .then(user => {
-//             console.log("Utilisateur récupéré : " + user.nickname);
+//             console.log("Utilisateur récupéré : " + user.username);
 //             let newLikedFilmsId = user.likedFilmsId;
 //             let newDislikedFilmsId = user.dislikedFilmsId;
 //             let likesOperation, dislikesOperation = 0;
@@ -249,7 +254,7 @@ exports.likeOpinion = (req, res, next) => {
 //                         },
 //                         { new: true })
 //                         .then(updatedFilm => {
-//                             console.log("L'utilisateur " + updatedUser.nickname + " a bien ajouté ou enlevé un like au film " + updatedFilm.title + ".\nIl a été liké " + updatedFilm.likes + "fois");
+//                             console.log("L'utilisateur " + updatedUser.username + " a bien ajouté ou enlevé un like au film " + updatedFilm.title + ".\nIl a été liké " + updatedFilm.likes + "fois");
 //                             res.status(201).json({
 //                                 user: updatedUser,
 //                                 film: updatedFilm
@@ -279,7 +284,7 @@ exports.likeOpinion = (req, res, next) => {
 //     console.log("Lancement de la requête pour récupérer l'utilisateur");
 //     User.findOne({ _id: req.body.userId })
 //         .then(user => {
-//             console.log("Utilisateur récupéré : " + user.nickname);
+//             console.log("Utilisateur récupéré : " + user.username);
 //             let newDislikedFilmsId = user.dislikedFilmsId;
 //             let decision = 0;
 //             // Si l'id du film est présent dans la liste de l'utilisateur, on le supprime et on désincrémente le nombre de dislikes, sinon on l'ajoute et on incrémente
@@ -307,7 +312,7 @@ exports.likeOpinion = (req, res, next) => {
 //                         { $inc: { dislikes: decision } },
 //                         { new: true })
 //                         .then(updatedFilm => {
-//                             console.log("L'utilisateur " + updatedUser.nickname + " a bien ajouté ou enlevé un dislike au film " + updatedFilm.title + ".\nIl a été disliké " + updatedFilm.dislikes + "fois");
+//                             console.log("L'utilisateur " + updatedUser.username + " a bien ajouté ou enlevé un dislike au film " + updatedFilm.title + ".\nIl a été disliké " + updatedFilm.dislikes + "fois");
 //                             res.status(201).json({
 //                                 user: updatedUser,
 //                                 film: updatedFilm
@@ -338,7 +343,7 @@ exports.likeOrDislikeItem = (req, res, next) => {
     console.log("Lancement de la requête pour récupérer l'utilisateur");
     User.findOne({ _id: req.body.userId })
         .then(user => {
-            console.log("Utilisateur récupéré : " + user.nickname);
+            console.log("Utilisateur récupéré : " + user.username);
             let newLists = {};
             if (itemType === "film") {
                 newLists = {
@@ -420,7 +425,7 @@ exports.likeOrDislikeItem = (req, res, next) => {
                             },
                             { new: true })
                             .then(updatedFilm => {
-                                console.log("L'utilisateur " + updatedUser.nickname + " a bien ajouté ou enlevé un like au film " + updatedFilm.title + ".\nIl a été liké " + updatedFilm.likes + "fois");
+                                console.log("L'utilisateur " + updatedUser.username + " a bien ajouté ou enlevé un like au film " + updatedFilm.title + ".\nIl a été liké " + updatedFilm.likes + "fois");
                                 res.status(201).json({
                                     user: updatedUser,
                                     film: updatedFilm

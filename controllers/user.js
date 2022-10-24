@@ -6,18 +6,25 @@ const jwt = require('jsonwebtoken');
 const opinion = require('../models/opinion');
 
 exports.signup = (req, res, next) => {
+    console.log("Tentative d'inscription");
+    console.log('User : '+req.body.username);
+    console.log('Password : '+req.body.password);
     bcrypt.hash(req.body.password, 10)
         .then(hash => {
             const user = new User({
-                nickname: req.body.nickname,
+                username: req.body.username,
                 password: hash,
                 isAdmin: false
             });
             user.save()
                 .then(() => {
+                    console.log('Inscription réussie');
                     res.status(201).json({ message: 'Utilisateur créé!' })
                 })
-                .catch(error => res.status(400).json(error));
+                .catch(error => {
+                    console.log("Erreur lors de l'inscription");
+                    res.status(400).json(error)
+                });
         })
         .catch(error => res.status(500).json(error));
 };
@@ -25,7 +32,7 @@ exports.signup = (req, res, next) => {
 exports.signin = (req, res, next) => {
     console.log("Tentative de connexion");
     // On cherche l'utilisateur
-    User.findOne({ nickname: req.body.nickname })
+    User.findOne({ username: req.body.username })
         .then(user => {
             if (user) {
                 // Une fois trouvé, on compare son password crypté à ce qu'il y a dans la DB
@@ -33,10 +40,10 @@ exports.signin = (req, res, next) => {
                     .then(result => {
                         if (result) {
                             // Si le résultat est positif, alors on renvoie les infos de l'utilisateur
-                            console.log("Connexion réussie de " + user.nickname);
+                            console.log("Connexion réussie de " + user.username);
                             res.status(200).json({
                                 _id: user.id,
-                                nickname: user.nickname,
+                                username: user.username,
                                 isAdmin: user.isAdmin,
                                 likedFilmsId: user.likedFilmsId,
                                 dislikedFilmsId: user.dislikedFilmsId,
@@ -74,7 +81,7 @@ exports.getOneUser = (req, res, next) => {
         .then(user => {
             const sendUser = {
                 _id: user._id,
-                nickname: user.nickname,
+                username: user.username,
                 likedFilmsId: user.likedFilmsId,
                 dislikedFilmsId: user.dislikedFilmsId,
                 opinionsId: user.opinionsId,
@@ -154,11 +161,16 @@ exports.getOpinions = (req, res, next) => {
         })
 };
 
-exports.fix = (req, res, next) => {
-
-}
+// exports.fix = (req, res, next) => {
+//     User.updateMany({},
+//         {
+//             $rename: { "nickname": "username" }
+//         })
+//         .then(() => res.status(200).json('fait lol'));
+// }
 
 exports.getAllUsers = (req, res, next) => {
     User.find().then(users => res.status(200).json(users))
+
 }
 

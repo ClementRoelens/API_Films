@@ -9,11 +9,11 @@ const auth = require("../middlewares/authentification");
 // Renvoie la totalité
 router.get("/getAllFilms", filmCtrl.getAllFilms);
 router.get("/getAllInOneGenre/:genre", filmCtrl.getAllInOneGenre);
-router.get("/getAllInOneDirector/:director", filmCtrl.getAllInOneDirector);
+router.get("/getAllInOneAuthor/:author", filmCtrl.getAllInOneAuthor);
 // Renvoie un certain nombre au hasard
 router.get("/getRandomFilms", filmCtrl.getRandomFilms);
 router.get("/getRandomInOneGenre/:genre",filmCtrl.getRandomInOneGenre);
-router.get("/getRandomInOneDirector/:director",filmCtrl.getRandomInOneDirector);
+router.get("/getRandomInOneAuthor/:author",filmCtrl.getAllInOneAuthor);
 router.get("/getOneRandom", filmCtrl.getOneRandom);
 // Renvoie un seul film choisi
 router.get("/getOneFilm/:id", filmCtrl.getOneFilm);

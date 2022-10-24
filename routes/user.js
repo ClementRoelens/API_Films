@@ -16,6 +16,6 @@ router.post("/signin", userCtrl.signin);
 // router.get("/getLikedFilms/:id", userCtrl.getLikedFilms);
 // router.get("/getOpinions/:id", userCtrl.getOpinions);
 // router.get("/getDislikedFilms/:id", userCtrl.getDislikedFilms);
-// router.get("/fix",userCtrl.fix);
+// router.put("/fix",userCtrl.fix);
 
 module.exports = router;
