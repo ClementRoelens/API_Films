@@ -7,7 +7,7 @@ const sharedRoutes = require("./routes/shared");
 const path = require("path");
 
 const mongoose = require("mongoose");
-mongoose.connect("mongodb+srv://public:4FqgVECzSgXyTCTB@cluster0.62z4x.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+mongoose.connect("...",
     {
         useNewUrlParser: true,
         useUnifiedTopology: true
